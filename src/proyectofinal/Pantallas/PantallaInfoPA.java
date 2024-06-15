@@ -27,12 +27,10 @@ public class PantallaInfoPA extends javax.swing.JFrame {
     }
     
     private void setData(DataPA data){
-        lbDistrito.setText(data.getDistrito());
+        lbDistrito.setText(data.getDistrito().toUpperCase());
         lbEstructura.setText(data.getEstructura());
         lbCodigo.setText(data.getCodigo());
-        lbDireccion.setText(data.getDireccion());
-        
-        lbDireccion.getText();
+        lbDireccion.setText("<html>" + data.getDireccion());
     }
     
     /**
@@ -120,14 +118,14 @@ public class PantallaInfoPA extends javax.swing.JFrame {
         lbDireccion.setText("-");
         lbDireccion.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         lbDireccion.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
-        jPanel1.add(lbDireccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 150, 160, 60));
+        jPanel1.add(lbDireccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 150, 160, 70));
 
         jLabel9.setText("Código:");
         jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 110, 50, -1));
 
         lbDistrito.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lbDistrito.setText("-");
-        jPanel1.add(lbDistrito, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 40, 140, -1));
+        jPanel1.add(lbDistrito, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 40, 200, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
