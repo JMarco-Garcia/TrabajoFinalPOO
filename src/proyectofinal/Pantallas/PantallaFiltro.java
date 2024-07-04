@@ -6,8 +6,12 @@ package proyectofinal.Pantallas;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -15,6 +19,8 @@ import javax.swing.border.EmptyBorder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import proyectofinal.Entidades.UserClient;
+import proyectofinal.panel.DropDown.ListItem;
+import proyectofinal.panel.DropDown.ToggleListAnimation;
 import proyectofinal.panel.InfoPanel;
 import proyectofinal.scrollbar.ScrollBar;
 
@@ -22,48 +28,46 @@ import proyectofinal.scrollbar.ScrollBar;
  *
  * @author Home
  */
-public class PantallaFav extends javax.swing.JPanel {
+public class PantallaFiltro extends javax.swing.JPanel {
 
     /**
-     * Creates new form HOMEFORM
+     * Creates new form PantallaFiltro
      */
-    public PantallaFav() {
+    JPanel forma;
+    JPanel forma2;
+
+    public PantallaFiltro() {
         initComponents();
-
-        JSONObject result = UserClient.getFavoritos();
-
         setLayout(new BorderLayout());
 
-        setPreferredSize(new Dimension(881, 539));
+        JSONObject puntos = UserClient.filtrarDistritos();
+        if (puntos.getBoolean("success")) {
+            JSONObject datos = puntos.getJSONObject("datos");
+            ToggleListAnimation cuadro = new ToggleListAnimation();
 
-        if (result.getBoolean("success")) {
-            JSONArray favoritosList = result.getJSONArray("favoritos_list");
-            int rows = (int) Math.ceil(favoritosList.length() / 2.0);
+            for (String distrito : datos.keySet()) {
+                forma = new JPanel();
+                forma2 = new JPanel();
 
-            JPanel formContainer = new JPanel();
-            formContainer.setLayout(new GridLayout(rows, 2, 20, 20));
+                ListItem listItem = new ListItem(datos, distrito);
+                cuadro.add(listItem);
+                forma.add(cuadro);
 
-            for (int i = 0; i < favoritosList.length(); i++) {
-                JSONArray favorito = favoritosList.getJSONArray(i);
-                JPanel panelWrapper = new JPanel(new BorderLayout());
-                panelWrapper.setBorder(new EmptyBorder(20, 15, 15, 20));
-                InfoPanel mainPanel = new InfoPanel(favorito);
-                panelWrapper.add(mainPanel);
-                formContainer.add(panelWrapper);
+                JScrollPane scroll = createScroll();
+                scroll.setViewportView(forma);
+                scroll.getViewport().setOpaque(false);
+                scroll.setViewportBorder(null);
+                forma2.add(scroll);
             }
-
-            JPanel rightAlignedFormContainer = new JPanel(new BorderLayout());
-            rightAlignedFormContainer.setBorder(new EmptyBorder(30, 40, 0, 0));
-            rightAlignedFormContainer.add(formContainer, BorderLayout.CENTER);
             JScrollPane scroll = createScroll();
-            scroll.setViewportView(rightAlignedFormContainer);
+            scroll.setViewportView(forma2);
             scroll.getViewport().setOpaque(false);
             scroll.setViewportBorder(null);
             this.add(scroll, BorderLayout.CENTER);
 
         } else {
-            System.out.println("Error: " + result.getString("message"));
-            JOptionPane.showMessageDialog(null, "Error: " + result.getString("message"), "Error", JOptionPane.ERROR_MESSAGE);
+            System.out.println("Error: " + puntos.getString("message"));
+            JOptionPane.showMessageDialog(null, "Error: " +puntos.getString("message"), "Error", JOptionPane.ERROR_MESSAGE);
 
         }
     }
@@ -85,6 +89,8 @@ public class PantallaFav extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+
+        setPreferredSize(new java.awt.Dimension(881, 539));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

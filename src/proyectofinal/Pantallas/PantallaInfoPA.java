@@ -9,30 +9,53 @@ import javax.swing.JLabel;
 import proyectofinal.Entidades.DataPA;
 import javax.swing.*;
 import java.awt.*;
+import org.json.JSONObject;
+import proyectofinal.Entidades.MoveJFrame;
+import proyectofinal.Entidades.UserClient;
 
 /**
  *
  * @author marco
  */
-public class PantallaInfoPA extends javax.swing.JFrame {
+public class PantallaInfoPA extends MoveJFrame {
 
-    PantallaPrincipal ga = new PantallaPrincipal();
+    //PantallaPrincipal ga = new PantallaPrincipal();
+
     public PantallaInfoPA() {
+
         initComponents();
+        //initIcons();
+
     }
+
     public PantallaInfoPA(DataPA data) {
         initComponents();
+        initIcons();
+
         setData(data);
-        this.setLocation(ga.getxBtnFav() + 212, ga.getyBtnFav() +156);
+        boolean isFavorite = UserClient.isFavorite(lbCodigo.getText());
+        starFilled.setVisible(isFavorite);
+
+        //this.setLocation(ga.getxBtnFav() + 212, ga.getyBtnFav() + 156);
     }
-    
-    private void setData(DataPA data){
-        lbDistrito.setText(data.getDistrito().toUpperCase());
+
+    public void checkFavorite() {
+    }
+
+    public void initIcons() {
+        starFilled.setVisible(false);
+        starEmpty.setVisible(true);
+    }
+
+    private void setData(DataPA data) {
+        lbDistrito.setText(data.getDistrito());
         lbEstructura.setText(data.getEstructura());
         lbCodigo.setText(data.getCodigo());
-        lbDireccion.setText("<html>" + data.getDireccion());
+        lbDireccion.setText(data.getDireccion());
+
+        lbDireccion.getText();
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -47,6 +70,8 @@ public class PantallaInfoPA extends javax.swing.JFrame {
         btnCerrar = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        starFilled = new javax.swing.JLabel();
+        starEmpty = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel4 = new javax.swing.JLabel();
@@ -58,7 +83,6 @@ public class PantallaInfoPA extends javax.swing.JFrame {
         lbDistrito = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setUndecorated(true);
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -93,6 +117,24 @@ public class PantallaInfoPA extends javax.swing.JFrame {
 
         jPanel2.add(btnCerrar, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 0, 30, 30));
 
+        starFilled.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        starFilled.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/star(1).png"))); // NOI18N
+        starFilled.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                starFilledMouseClicked(evt);
+            }
+        });
+        jPanel2.add(starFilled, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 0, 30, 30));
+
+        starEmpty.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        starEmpty.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/star.png"))); // NOI18N
+        starEmpty.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                starEmptyMouseClicked(evt);
+            }
+        });
+        jPanel2.add(starEmpty, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 0, 30, 30));
+
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 320, 30));
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -118,14 +160,14 @@ public class PantallaInfoPA extends javax.swing.JFrame {
         lbDireccion.setText("-");
         lbDireccion.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         lbDireccion.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
-        jPanel1.add(lbDireccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 150, 160, 70));
+        jPanel1.add(lbDireccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 150, 160, 60));
 
         jLabel9.setText("Código:");
         jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 110, 50, -1));
 
         lbDistrito.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lbDistrito.setText("-");
-        jPanel1.add(lbDistrito, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 40, 200, -1));
+        jPanel1.add(lbDistrito, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 40, 140, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -142,16 +184,55 @@ public class PantallaInfoPA extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnCerrarMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCerrarMouseEntered
-        btnCerrar.setBackground(new Color(36,36,51 ));
+        btnCerrar.setBackground(new Color(36, 36, 51));
     }//GEN-LAST:event_btnCerrarMouseEntered
 
     private void btnCerrarMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCerrarMouseExited
-        btnCerrar.setBackground(new Color(36,36,51));
+        btnCerrar.setBackground(new Color(36, 36, 51));
     }//GEN-LAST:event_btnCerrarMouseExited
 
     private void btnCerrarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCerrarMouseClicked
         this.dispose();
     }//GEN-LAST:event_btnCerrarMouseClicked
+
+    private void starFilledMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_starFilledMouseClicked
+        starFilled.setVisible(false);
+        starFilled.setEnabled(false);
+
+        starEmpty.setVisible(true);
+        starEmpty.setEnabled(true);
+
+        JSONObject FavResult = UserClient.PointFav(lbCodigo.getText(), "d");
+        String message = FavResult.getString("message");
+
+        boolean success = FavResult.getBoolean("success");
+        if (success) {
+            JOptionPane.showMessageDialog(this, message, "Exitoso", JOptionPane.INFORMATION_MESSAGE);
+
+        } else {
+            JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+
+        }
+    }//GEN-LAST:event_starFilledMouseClicked
+
+    private void starEmptyMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_starEmptyMouseClicked
+        starFilled.setVisible(true);
+        starFilled.setEnabled(true);
+
+        starEmpty.setVisible(false);
+        starEmpty.setEnabled(false);
+        JSONObject FavResult = UserClient.PointFav(lbCodigo.getText(), "a");
+        String message = FavResult.getString("message");
+
+        boolean success = FavResult.getBoolean("success");
+        if (success) {
+            JOptionPane.showMessageDialog(this, message, "Exitoso", JOptionPane.INFORMATION_MESSAGE);
+
+        } else {
+            JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+
+        }
+    }//GEN-LAST:event_starEmptyMouseClicked
 
     /**
      * @param args the command line arguments
@@ -183,7 +264,9 @@ public class PantallaInfoPA extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
+
                 new PantallaInfoPA().setVisible(true);
             }
         });
@@ -204,5 +287,7 @@ public class PantallaInfoPA extends javax.swing.JFrame {
     private javax.swing.JLabel lbDireccion;
     private javax.swing.JLabel lbDistrito;
     private javax.swing.JLabel lbEstructura;
+    private javax.swing.JLabel starEmpty;
+    private javax.swing.JLabel starFilled;
     // End of variables declaration//GEN-END:variables
 }

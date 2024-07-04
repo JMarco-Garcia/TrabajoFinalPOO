@@ -4,6 +4,12 @@
  */
 package proyectofinal.Mapa;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.event.MouseInputListener;
 import org.jxmapviewer.JXMapViewer;
@@ -16,6 +22,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.SwingUtilities;
+import java.util.Timer;
+import java.util.TimerTask;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jxmapviewer.VirtualEarthTileFactoryInfo;
 import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
 import org.jxmapviewer.viewer.TileFactory;
@@ -26,112 +44,175 @@ import proyectofinal.Entidades.PuntoDeAbastecimiento;
 import proyectofinal.Entidades.PuntoDeAbastecimiento;
 import proyectofinal.Entidades.PuntoDeAbastecimientoML;
 import proyectofinal.Entidades.SetPuntoDeAbastecimiento;
+import proyectofinal.Entidades.UserClient;
+import proyectofinal.Pantallas.PantallaPrincipal;
+import proyectofinal.panel.textfield.TextField;
 
-public class CrearMapa extends JXMapViewer{
+public class CrearMapa extends JXMapViewer {
+
+    private static Set<PuntoDeAbastecimiento> waypoints = new HashSet<>();
+    private static WaypointPainter<PuntoDeAbastecimiento> waypointPainter = new SetPuntoDeAbastecimiento();
+    private static javax.swing.Timer timer;
+    private TextField textField;
+    private boolean buscando = false;
+    private JLabel resetButton;
 
     public CrearMapa() {
 
     }
 
     public void iniciarMapa() {
+        //this.removeAll();
         List<TileFactory> estilosMapa = new ArrayList<>();
-        //Crear dos estilos de mapa
+
         estilosMapa(estilosMapa);
         TileFactory tilePrincipal = estilosMapa.get(0);
         setTileFactory(tilePrincipal);
-        // Establecer posicion de Lima
-        GeoPosition lima = new GeoPosition(-12.0089248,-76.9715627);
-        // sjl puntos de abastecimientos
-        GeoPosition p1 = new GeoPosition(-12.007904778945383, -76.99299934676588);
-        DataPA sjl1 = new DataPA("san juan de lurigancho", 
-                "camara rebombeo",
-                "Urb. Inca Manco Cápac AAHH Palomares (costado de la fábrica de Celima)",
-                "CR-209");
-        
-        GeoPosition p2 = new GeoPosition(-11.9989974,-77.0042875);
-        DataPA sjl2 = new DataPA("san juan de lurigancho", 
-                "camara rebombeo",
-                "FTE MZ P1 LOT 28 URB. SAN HILARION -",
-                "CR-213");
-        
-        GeoPosition p3 = new GeoPosition(-11.95500248112223, -76.99800073829809);
-        DataPA sjl3 = new DataPA("san juan de lurigancho", 
-                "camara rebombeo",
-                "FRENTE A MZ C LOTE 09, AH. 22 DE NOVIEMBRE",
-                "CR-299");
-        
-        GeoPosition p4 = new GeoPosition(-11.926989491072082, -76.98901073349292);
-        DataPA sjl4 = new DataPA("san juan de lurigancho", 
-                "camara rebombeo",
-                "MZ U LOT 6C CERRITO SAN CRISTOBAL 5TA ETAPA J. CARLOS MARITEGUI",
-                "CR-365");
-        
-        GeoPosition p5 = new GeoPosition(-11.929989491185442, -76.99301073349287);
-        DataPA sjl5 = new DataPA("san juan de lurigancho", 
-                "camara rebombeo",
-                "Av. Pampa Alta (parte alta cerro), AH. José c Mariátegui V etapa Cerrito La Libertad",
-                "CR-152");
-        
-        GeoPosition p6 = new GeoPosition(-11.974989492888994, -77.01500000465585);
-        DataPA sjl6 = new DataPA("san juan de lurigancho", 
-                "camara rebombeo",
-                "AV AMANCAES ESQ CA AMANCAES URB CANTO BELLO",
-                "CR-194");
-        
-        GeoPosition p7 = new GeoPosition(-11.93901048503357, -77.01100000465657);
-        DataPA sjl7 = new DataPA("san juan de lurigancho", 
-                "camara rebombeo",
-                "MZ L LOTE 06, SECTOR AMPLIACIÓN CRISTO REY, SAÚL CANTORAL",
-                "CR-376");
-        
-        GeoPosition p8 = new GeoPosition(-11.948999988270582, -76.99000000465641);
-        DataPA sjl8 = new DataPA("san juan de lurigancho", 
-                "camara rebombeo",
-                "FTE. MZ \"E\" LTE. 7, AH. VISTA ALEGRE.(AMPL.10 DE OCTUBRE)",
-                "CR-389");
-        
-        GeoPosition p9 = new GeoPosition(-11.960998883555224, -76.99300325984763);
-        DataPA sjl9 = new DataPA("san juan de lurigancho", 
-                "camara rebombeo",
-                "FTE AL COLEGIO FE Y ALEGRÍA N° 26- MZ 38",
-                "CR-056");
-        
-        GeoPosition p10 = new GeoPosition(-11.939020981786914, -76.99602146232874);
-        DataPA sjl10 = new DataPA("san juan de lurigancho", 
-                "camara rebombeo",
-                "FTE MZ M1 LOT 5 S.S. JUAN PABLO II",
-                "CR-122");
-        //
-        
-        
-        
+        GeoPosition lima = new GeoPosition(-12.0089248, -76.9715627);
+
+        textField = new TextField("Buscar Informacion", true);
+        textField.setBounds(20, 20, 200, 40);
+        textField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String texto = textField.getText();
+                if (!texto.isEmpty() && texto.length() > 4) {
+                    buscando = true;
+                    SearchPuntosByKey(texto);
+                } else {
+                    //SearchPuntosByKey(null);
+                    JOptionPane.showMessageDialog(CrearMapa.this, "La Búsqueda No Puede Ser Vacía o Menos de 4 caracteres");
+                    //Notification noti = new Notification(PantallaPrincipal.getJFram(),Notification.Type.WARNING,Notification.Location.TOP_CENTER,"La Búsqueda No Puede Ser Vacía o Menos de 4 caracteres");
+                    //noti.showNotification();
+                }
+            }
+        });
+        resetButton = new JLabel(new ImageIcon(getClass().getResource("/imagen/refresh.png"))); // Asegúrate de que la ruta del icono sea correcta
+        resetButton.setBounds(210, 22, 50, 30);
+        resetButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                buscando = false;
+                textField.setText("");
+                SearchPuntosByKey(null);
+            }
+        });
+        this.add(resetButton);
+
+        this.add(textField);
+
         setZoom(8);
         interaccion();
         setAddressLocation(lima);
-        
-         // Create waypoints from the geo-positions
-        Set<PuntoDeAbastecimiento> waypoints = new HashSet<PuntoDeAbastecimiento>(Arrays.asList(
-            new PuntoDeAbastecimiento("gaaa", p1, sjl1),
-            new PuntoDeAbastecimiento("waaas", p2, sjl2),
-            new PuntoDeAbastecimiento("waaas", p3, sjl3),
-            new PuntoDeAbastecimiento("waaas", p4, sjl4),
-            new PuntoDeAbastecimiento("waaas", p5, sjl5),
-            new PuntoDeAbastecimiento("waaas", p6, sjl6),
-            new PuntoDeAbastecimiento("waaas", p7, sjl7),
-            new PuntoDeAbastecimiento("waaas", p8, sjl8),
-            new PuntoDeAbastecimiento("waaas", p9, sjl9),
-            new PuntoDeAbastecimiento("waaas", p10, sjl10)
-        ));
-        // Set the overlay painter
-        WaypointPainter<PuntoDeAbastecimiento> swingWaypointPainter = new SetPuntoDeAbastecimiento();
-        swingWaypointPainter.setWaypoints(waypoints);
-        this.setOverlayPainter(swingWaypointPainter);
 
-        // Add the JButtons to the map viewer
-        for (PuntoDeAbastecimiento w : waypoints) {
-            this.add(w.getLabel());
+        waypointPainter.setWaypoints(waypoints);
+        this.setOverlayPainter(waypointPainter);
+
+        UpdateMap();
+    }
+
+    private void UpdateMap() {
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
         }
 
+        timer = new javax.swing.Timer(5000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!buscando) {
+                    new SwingWorker<JSONObject, Void>() {
+                        @Override
+                        protected JSONObject doInBackground() throws Exception {
+                            return UserClient.getPuntos();
+                        }
+
+                        @Override
+                        protected void done() {
+                            try {
+                                JSONObject response = get();
+                                if (response != null && response.getBoolean("success")) {
+                                    updateWaypoints(response);
+                                } else {
+                                    JOptionPane.showMessageDialog(CrearMapa.this, "Error: " + response.getString("message"));
+                                    //System.out.print("Error: " + response.getString("message"));
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }.execute();
+                }
+            }
+        });
+
+        timer.start();
+    }
+
+    private void SearchPuntosByKey(String valor) {
+        new SwingWorker<JSONObject, Void>() {
+            @Override
+            protected JSONObject doInBackground() throws Exception {
+                if (valor == null) {
+                    return UserClient.getPuntos();
+                } else {
+                    return UserClient.getPuntosByKey(valor);
+                }
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    JSONObject response = get();
+                    if (response != null && response.getBoolean("success")) {
+                        updateWaypoints(response);
+                    } else {
+                        JOptionPane.showMessageDialog(CrearMapa.this, "Error: " + response.getString("message"));
+//System.out.print("Error: " + response.getString("message"));
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }.execute();
+    }
+
+    public void updateWaypoints(JSONObject listaJson) {
+        try {
+            JSONArray data = listaJson.getJSONArray("datos");
+
+            Set<PuntoDeAbastecimiento> newWaypoints = new HashSet<>();
+            for (int i = 0; i < data.length(); i++) {
+                JSONObject jsonObject = data.getJSONObject(i);
+                double lat = jsonObject.getDouble("lat");
+                double lon = jsonObject.getDouble("lon");
+                String distrito = jsonObject.getString("distrito");
+                String estructura = jsonObject.getString("estructura");
+                String direccion = jsonObject.getString("direccion");
+                String codigo = jsonObject.getString("codigo");
+
+                GeoPosition position = new GeoPosition(lat, lon);
+                DataPA dataPA = new DataPA(distrito, estructura, direccion, codigo);
+                PuntoDeAbastecimiento punto = new PuntoDeAbastecimiento(codigo, position, dataPA);
+                newWaypoints.add(punto);
+            }
+            for (PuntoDeAbastecimiento antiguo : waypoints) {
+                this.remove(antiguo.getLabel());
+            }
+            waypoints.clear();
+            waypoints.addAll(newWaypoints);
+
+            waypointPainter.setWaypoints(waypoints);
+
+            this.repaint();
+
+            //this.removeAll();
+            for (PuntoDeAbastecimiento w : waypoints) {
+                this.add(w.getLabel());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void estilosMapa(List<TileFactory> estilosMapa) {
@@ -140,14 +221,14 @@ public class CrearMapa extends JXMapViewer{
         // Añadir los estilos a la lista
         estilosMapa.add(new DefaultTileFactory(tile1));
         estilosMapa.add(new DefaultTileFactory(tile2));
-        
+
     }
-    public void interaccion(){
+
+    public void interaccion() {
         MouseInputListener mia = new PanMouseInputListener(this);
         addMouseListener(mia);
         addMouseMotionListener(mia);
         addMouseWheelListener(new ZoomMouseWheelListenerCursor(this));
     }
-    
-    
+
 }
